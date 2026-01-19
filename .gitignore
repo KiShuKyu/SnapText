@@ -1,0 +1,8 @@
+ss.py
+capture
+things_to_know.txt
+.env
+.idea/
+.venv/
+__pycache__/
+*.pyc
