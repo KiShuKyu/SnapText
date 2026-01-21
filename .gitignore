@@ -6,3 +6,4 @@ things_to_know.txt
 .venv/
 __pycache__/
 *.pyc
+__init__.py

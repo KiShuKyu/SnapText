@@ -1,12 +1,12 @@
 import time
-import os
 import mss
 from PIL import Image
 import pytesseract
 import cv2
 import numpy as np
 import pyperclip
-from region import RegionSelector
+from SnapText.capture.region import RegionSelector
+from SnapText.ocr.gemini_helper import clean_ocr_text
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -20,7 +20,7 @@ def preprocess_image(pil_image):
     img = np.array(pil_image)
 
     # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
     # Resize up (OCR likes bigger text)
     gray = cv2.resize(
@@ -79,15 +79,15 @@ def capture_and_ocr():
 
     # 🔹 NEW STEP: Preprocess image using OpenCV
     processed_image = preprocess_image(original_image)
+    raw_text = pytesseract.image_to_string(processed_image)
 
-    # OCR on cleaned image
-    text = pytesseract.image_to_string(processed_image)
+    clean_text = clean_ocr_text(raw_text)
 
-    if text.strip():
-        pyperclip.copy(text)
-        print("OCR text copied to clipboard.")
+    if clean_text.strip():
+        pyperclip.copy(clean_text)
+        print("Cleaned text copied to clipboard.")
     else:
-        print("No text detected to copy.")
+        print("No text detected.")
 
         # Optional: save OCR output
     timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -99,7 +99,7 @@ def capture_and_ocr():
     print("OCR complete.")
     # print("Saved text to:", os.path.abspath(text_file))
     print("\nExtracted text:\n")
-    print(text)
+    print(clean_text)
 
 if __name__ == "__main__":
     capture_and_ocr()
