@@ -23,7 +23,7 @@ This workflow turns screenshots into immediately usable text with minimal fricti
 
 ---
 
-## 🧩 Architecture Overview
+## Architecture Overview
 
 SnapText follows a **single-responsibility pipeline**, where each stage is isolated and testable:
 
@@ -40,7 +40,7 @@ This separation ensures clarity, debuggability, and ease of future upgrades.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 SnapText/
@@ -140,3 +140,4 @@ SnapText is **functionally complete up to a unified entry point (`main.py`)** an
 ## License
 
 MIT License
+
