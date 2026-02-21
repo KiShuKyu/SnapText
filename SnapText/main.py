@@ -1,48 +1,45 @@
 import keyboard
-from capture.capture_region import capture_and_ocr
 from capture.capture_region import preprocess_image
-import pytesseract
 from ocr.engine_selector import get_engine
-
-image = capture_and_ocr()
-processed = preprocess_image(image)
-# text = engine.read_text(processed_image)
-#
-
-
-
-# custom_config = r'--oem 3 --psm 6'
-# text = pytesseract.image_to_string(
-#     processed,
-#     lang='eng',
-#     config=custom_config
-# )
-
-
-
 from capture.capture_region import capture_region
-from ocr.preprocess import preprocess_image
-from ocr.engine_selector import get_engine
 
-engine = get_engine("easyocr", "en+hi")
+# initialize engine ONCE
+# choose engine and languages here:
+USE_GEMINI = True
+text = ocr_engine.read_text(processed)
 
-def trigger_capture():
-    image = capture_region()
-    processed = preprocess_image(image)
-    text = engine.read_text(processed)
+if USE_GEMINI:
+    from ocr.gemini_helper import clean_ocr_text
+    text = clean_ocr_text(text)
+
+ocr_engine = get_engine("easyocr", "en+hi")
+
+def perform_capture():
+    # 1. capture
+    raw_img = capture_and_ocr()
+
+    # 2. preprocess
+    processed = preprocess_image(raw_img)
+
+    # 3. run through selected OCR engine
+    text = ocr_engine.read_text(processed)
+
+    print("\n=== OCR OUTPUT ===")
     print(text)
-def main():
-    hotkey = 'ctrl+shift+F9'
+    print("==================")
 
-    print(f"--- SnapText Background Service ---")
-    print(f"Hotkey: Press {hotkey.upper()} to capture text.")
-    print(f"Exit:   Press ESC to close the application.")
-    print("-" * 35)
+def trigger_capture(raw_img):
+    print("[!] Hotkey pressed — capturing...")
+    try:
+        perform_capture()
+        print("[+] Done.")
+        print("Ready for next (Press Ctrl+Shift+F9)")
+    except Exception as e:
+        print("[-] Error:", e)
 
-    # Register the hotkey
-    keyboard.add_hotkey(hotkey, trigger_capture)
-    keyboard.wait('esc')
-    print("\n[!] SnapText closed.")
+# register global hotkey
+keyboard.add_hotkey("ctrl+shift+f9", trigger_capture)
 
-if __name__ == "__main__":
-    main()
+print("SnapText OCR ready. Press Ctrl+Shift+F9.")
+
+keyboard.wait()
