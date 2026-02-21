@@ -141,3 +141,4 @@ SnapText is **functionally complete up to a unified entry point (`main.py`)** an
 
 MIT License
 
+
