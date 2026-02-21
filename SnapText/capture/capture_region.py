@@ -10,33 +10,69 @@ from SnapText.ocr.gemini_helper import clean_ocr_text
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-def preprocess_image(pil_image):
-    """
-    Tuned preprocessing for hard screenshots.
-    Returns a PIL Image optimized for OCR.
-    """
+# def preprocess_image(pil_image):
+#     """
+#     Tuned preprocessing for hard screenshots.
+#     Returns a PIL Image optimized for OCR.
+#     """
+#
+#     # Convert PIL → NumPy
+#     img = np.array(pil_image)
+#
+#     # Convert to grayscale
+#     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+#
+#     # Resize up (OCR likes bigger text)
+#     gray = cv2.resize(
+#         gray,
+#         None,
+#         fx=1.5,
+#         fy=1.5,
+#         interpolation=cv2.INTER_CUBIC
+#     )
+#
+#     # Reduce noise slightly (helps thresholding)
+#     gray = cv2.GaussianBlur(gray, (5, 5), 0)
+#
+#     # Adaptive threshold (handles uneven lighting)
+#     thresh = cv2.adaptiveThreshold(
+#         gray,
+#         255,
+#         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#         cv2.THRESH_BINARY,
+#         11,
+#         2
+#     )
+#
+#     # Morphological cleanup
+#     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+#     thresh = cv2.morphologyEx(
+#         thresh,
+#         cv2.MORPH_CLOSE,
+#         kernel
+#     )
+#
+#     # Return to PIL for Tesseract
+#     return Image.fromarray(thresh)
 
-    # Convert PIL → NumPy
-    img = np.array(pil_image)
 
-    # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-    # Resize up (OCR likes bigger text)
-    gray = cv2.resize(
-        gray,
-        None,
-        fx=1.5,
-        fy=1.5,
-        interpolation=cv2.INTER_CUBIC
-    )
+def preprocess_image(image):
+    # 1. Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Reduce noise slightly (helps thresholding)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    # 2. Upscale (very important for small UI fonts)
+    scale_percent = 200
+    width = int(gray.shape[1] * scale_percent / 100)
+    height = int(gray.shape[0] * scale_percent / 100)
+    resized = cv2.resize(gray, (width, height), interpolation=cv2.INTER_CUBIC)
 
-    # Adaptive threshold (handles uneven lighting)
+    # 3. Noise reduction
+    blurred = cv2.GaussianBlur(resized, (5, 5), 0)
+
+    # 4. Adaptive thresholding
     thresh = cv2.adaptiveThreshold(
-        gray,
+        blurred,
         255,
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv2.THRESH_BINARY,
@@ -44,18 +80,11 @@ def preprocess_image(pil_image):
         2
     )
 
-    # Morphological cleanup
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    thresh = cv2.morphologyEx(
-        thresh,
-        cv2.MORPH_CLOSE,
-        kernel
-    )
+    # 5. Morphological closing (restore broken characters)
+    kernel = np.ones((2, 2), np.uint8)
+    processed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
-    # Return to PIL for Tesseract
-    return Image.fromarray(thresh)
-
-
+    return processed
 
 def capture_and_ocr():
     selector = RegionSelector()

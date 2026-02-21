@@ -1,16 +1,36 @@
 import keyboard
 from capture.capture_region import capture_and_ocr
+from capture.capture_region import preprocess_image
+import pytesseract
+from ocr.engine_selector import get_engine
 
+image = capture_and_ocr()
+processed = preprocess_image(image)
+# text = engine.read_text(processed_image)
+#
+
+
+
+# custom_config = r'--oem 3 --psm 6'
+# text = pytesseract.image_to_string(
+#     processed,
+#     lang='eng',
+#     config=custom_config
+# )
+
+
+
+from capture.capture_region import capture_region
+from ocr.preprocess import preprocess_image
+from ocr.engine_selector import get_engine
+
+engine = get_engine("easyocr", "en+hi")
 
 def trigger_capture():
-    print("\n[!] Hotkey pressed! Starting SnapText...")
-    try:
-        capture_and_ocr()
-        print("[+] Ready for next capture (Press Ctrl+Shift+F9)")
-    except Exception as e:
-        print(f"[-] Error during capture: {e}")
-
-
+    image = capture_region()
+    processed = preprocess_image(image)
+    text = engine.read_text(processed)
+    print(text)
 def main():
     hotkey = 'ctrl+shift+F9'
 
