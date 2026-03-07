@@ -1,5 +1,3 @@
-ss.py
-capture
 things_to_know.md
 .env
 .idea/
@@ -7,3 +5,9 @@ things_to_know.md
 __pycache__/
 *.pyc
 __init__.py
+*.paddle_engine.py
+ocr\engines\paddle_engine.py
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
